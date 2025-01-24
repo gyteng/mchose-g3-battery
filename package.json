@@ -1,7 +1,7 @@
 {
-  "name": "webhid-battery",
+  "name": "mchose-g3-battery",
   "version": "1.0.0",
-  "description": "WebHID Battery Status Monitor",
+  "description": "Mchose G3 Battery Status Monitor",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

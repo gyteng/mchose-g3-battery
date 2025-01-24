@@ -49,15 +49,7 @@ async function updateDeviceList() {
 }
 
 async function getBatteryLevel(device, listItem) {
-    console.log('getBatteryLevel', device, listItem);
-
-    // 创建一个函数来更新显示
-    const updateDisplay = (data) => {
-        console.log('Battery data:', {
-            data: Array.from(data).map((byte, index) => `Byte ${index}: ${byte} (${byte.toString(16)}h)`)
-        });
-        
-        // 根据观察，Byte 2 (index: 2) 包含电池电量
+    const updateDisplay = (data) => {   
         const batteryLevel = data[8];
         
         const batterySpan = listItem.querySelector('.battery-level');
@@ -66,11 +58,16 @@ async function getBatteryLevel(device, listItem) {
                 <div style="margin-bottom: 10px">
                     <strong>Battery Level: ${batteryLevel}%</strong>
                 </div>
+                <!--
                 <div style="font-size: 0.9em; color: #666;">
                     Raw Data: ${Array.from(data).map((byte, index) => `<br>Byte ${index}: ${byte} (${byte.toString(16)}h)`).join('')}
                 </div>
+                -->
             `;
         }
+
+        // 更新标题栏
+        document.title = `${batteryLevel}% - G3 Battery`;
     };
 
     try {
@@ -87,7 +84,7 @@ async function getBatteryLevel(device, listItem) {
 
         // 添加刷新按钮
         const refreshButton = document.createElement('button');
-        refreshButton.textContent = 'Refresh Battery';
+        refreshButton.textContent = 'Refresh';
         refreshButton.style.marginLeft = '10px';
         refreshButton.onclick = requestBattery;
         
@@ -100,6 +97,22 @@ async function getBatteryLevel(device, listItem) {
         // 首次连接时尝试获取电池电量
         await requestBattery();
 
+        // 设置90秒自动刷新
+        const refreshInterval = setInterval(requestBattery, 90000);
+
+        // 在设备项被移除时清除定时器
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' && !document.contains(listItem)) {
+                    if (refreshInterval) {
+                        clearInterval(refreshInterval);
+                    }
+                    observer.disconnect();
+                }
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+
     } catch (error) {
         console.error('Error reading battery level:', error);
     }
@@ -110,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('requestDevice').addEventListener('click', requestDevice);
     
     navigator.hid.getDevices().then(existingDevices => {
-        console.log('Existing devices:', existingDevices);
         existingDevices.forEach(async (device) => {
             if (!device.opened) {
                 await device.open();
