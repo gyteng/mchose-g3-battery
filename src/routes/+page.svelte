@@ -16,6 +16,10 @@
       map.set(device, info);
       return map;
     });
+
+    if (info?.batteryLevel !== null) {
+      document.title = `${info.batteryLevel}% - G3 Battery Status`;
+    }
   };
 
   const getBatteryLevel = async (device) => {
@@ -46,7 +50,7 @@
         }
         devices.update((devices) => new Set([...devices, d]));
 
-        console.log("Device added:", d.productName);
+        console.log("Device added:", d);
         setDeviceInfo(d, {
           batteryLevel: null,
         });
@@ -64,8 +68,6 @@
         getBatteryLevel(d);
       }
     }
-
-    console.log("devices", devices);
   };
 
   const requestDevice = async () => {
@@ -99,17 +101,16 @@
       <li class="device-item">
         <div>
           <strong>Device:</strong>
-          {device.productName || "Unknown Device"}
+          <span>{device.productName || "Unknown Device"}</span>
+          <span class="gray">[VendorId: {device.vendorId} ProductId: {device.productId}]</span>
         </div>
-        <span class="battery-level">
+        <div class="battery-level">
           {#if $devicesInfo.get(device).batteryLevel}
-            <strong>Battery Level:</strong>
-            {$devicesInfo.get(device).batteryLevel}%
+            <span class="large">{$devicesInfo.get(device).batteryLevel}%</span>
           {:else}
-            <strong>Battery Level:</strong>
-            Loading...
+            <span>Loading...</span>
           {/if}
-        </span>
+        </div>
       </li>
     {/each}
   </ul>
@@ -142,5 +143,20 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
+  }
+  .device-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: -40px;
+    list-style: none;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  .device-item .gray {
+    color: gray;
+  }
+  .device-item .large {
+    font-size: 1.5em;
   }
 </style>
