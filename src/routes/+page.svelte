@@ -4,6 +4,7 @@
   import { supportedDevices } from "$lib";
 
   onMount(async () => {
+    console.log(`Build Time: ${(new Date(__BUILD_TIME__)).toLocaleString()}`);
     const existingDevices = await navigator.hid.getDevices();
     await addDevice(existingDevices);
   });
